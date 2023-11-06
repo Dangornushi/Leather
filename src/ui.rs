@@ -66,6 +66,7 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
     let mut text = Text::from(Spans::from(msg));
     text.patch_style(style);
     let help_message = Paragraph::new(text);
+    f.render_widget(help_message, chunks[1]);
     // --------------------
 
     // コマンド入力ウィンドウ
@@ -84,8 +85,6 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
     // --------------------
 
     match app.input_mode {
-        InputMode::Normal => {}
-
         InputMode::Command => {
             f.set_cursor(
                 command_box[0].x + app.command_text_box.input_width() + 1,
@@ -93,7 +92,7 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
             );
         }
 
-        InputMode::Editing => {
+        _ => {
             f.set_cursor(
                 windows[0].x + app.text_box.input_width() + 1,
                 windows[0].y + app.text_box.count_new_line() + 1,
