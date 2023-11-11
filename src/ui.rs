@@ -1,13 +1,13 @@
+use crate::app::App; // appモジュールからApp構造体をインポート
+use crate::inputmode::InputMode;
 use ratatui::{
     backend::Backend,
-    layout::{ Constraint, Direction, Layout},
+    layout::{Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
-    text::{Span, Text, Spans},
+    text::{Span, Spans, Text},
     widgets::{Block, Borders, Paragraph, Wrap},
     Frame,
-};
-use crate::app::App; // appモジュールからApp構造体をインポート
-use crate::inputmode::InputMode; // appモジュールからInputMode enumをインポート
+}; // appモジュールからInputMode enumをインポート
 
 pub fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
     let chunks = Layout::default()
@@ -24,25 +24,27 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
         )
         .split(f.size());
 
-
     let (msg, style) = match app.input_mode {
         // uiでモードをわけているけど、関数を分けて書いた方が良い
         InputMode::Normal => (
-            vec![
-                Span::styled("Normal mode", Style::default().add_modifier(Modifier::BOLD)),
-            ],
+            vec![Span::styled(
+                "Normal mode",
+                Style::default().add_modifier(Modifier::BOLD),
+            )],
             Style::default().add_modifier(Modifier::RAPID_BLINK),
         ),
         InputMode::Editing => (
-            vec![
-                Span::styled("Editing mode", Style::default().add_modifier(Modifier::BOLD)),
-            ],
+            vec![Span::styled(
+                "Editing mode",
+                Style::default().add_modifier(Modifier::BOLD),
+            )],
             Style::default(),
         ),
         InputMode::Command => (
-            vec![
-                Span::styled("Command mode", Style::default().add_modifier(Modifier::BOLD)),
-            ],
+            vec![Span::styled(
+                "Command mode",
+                Style::default().add_modifier(Modifier::BOLD),
+            )],
             Style::default(),
         ),
     };
@@ -58,7 +60,8 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
             InputMode::Editing => Style::default().fg(Color::Blue),
             _ => Style::default(),
         })
-        .block(Block::default().borders(Borders::ALL).title("Input")).wrap(Wrap {trim : false});
+        .block(Block::default().borders(Borders::ALL).title("Input"))
+        .wrap(Wrap { trim: false });
     f.render_widget(input, windows[0]);
     // --------------------
 
@@ -80,7 +83,8 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
             InputMode::Command => Style::default().fg(Color::Green),
             _ => Style::default(),
         })
-        .block(Block::default().borders(Borders::ALL).title("Command")).wrap(Wrap {trim : false});
+        .block(Block::default().borders(Borders::ALL).title("Command"))
+        .wrap(Wrap { trim: false });
     f.render_widget(command_input, command_box[0]);
     // --------------------
 
@@ -88,16 +92,13 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
         InputMode::Command => {
             f.set_cursor(
                 command_box[0].x + app.command_text_box.input_width() + 1,
-                command_box[0].y+1,
+                command_box[0].y + 1,
             );
         }
 
-        _ => {
-            f.set_cursor(
-                windows[0].x + app.text_box.input_width() + 1,
-                windows[0].y + app.text_box.count_new_line() + 1,
-            )
-        }
+        _ => f.set_cursor(
+            windows[0].x + app.text_box.input_width() + 1,
+            windows[0].y + app.text_box.count_new_line() + 1,
+        ),
     }
-
 }

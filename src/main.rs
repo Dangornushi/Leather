@@ -3,11 +3,8 @@ use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
+use ratatui::{backend::CrosstermBackend, Terminal};
 use std::{error::Error, io};
-use ratatui::{
-    backend::CrosstermBackend,
-    Terminal,
-};
 
 use leather::run_app;
 use leather::App;
@@ -17,9 +14,7 @@ fn get_terminal() -> Option<Terminal<CrosstermBackend<io::Stdout>>> {
     return Some(Terminal::new(CrosstermBackend::new(io::stdout())).ok()?);
 }
 
-
 fn main() -> Result<(), Box<dyn Error>> {
-
     // setup terminal
     enable_raw_mode()?;
 
@@ -34,17 +29,15 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // restore terminal
     disable_raw_mode()?;
-        execute!(
-            terminal.backend_mut(),
-            LeaveAlternateScreen,
-           DisableMouseCapture
-        )?;
-        terminal.show_cursor()?;
+    execute!(
+        terminal.backend_mut(),
+        LeaveAlternateScreen,
+        DisableMouseCapture
+    )?;
+    terminal.show_cursor()?;
     if let Err(err) = res {
         println!("{:?}", err)
     }
 
     Ok(())
 }
-
-

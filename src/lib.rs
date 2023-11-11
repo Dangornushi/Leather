@@ -1,12 +1,11 @@
-pub mod ui;
 pub mod app;
-pub mod textbox;
 pub mod inputmode;
+pub mod textbox;
+pub mod ui;
 
 // ライブラリの公開インターフェースを定義
-pub use ui::ui; 
-pub use app::App;
 pub use app::run_app;
-pub use textbox::TextBox;
+pub use app::App;
 pub use inputmode::InputMode;
-
+pub use textbox::TextBox;
+pub use ui::ui;

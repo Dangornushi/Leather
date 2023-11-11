@@ -3,4 +3,3 @@ pub enum InputMode {
     Editing,
     Command,
 }
-

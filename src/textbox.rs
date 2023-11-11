@@ -3,12 +3,11 @@ use std::collections::HashMap;
 pub struct TextBox {
     pub input: String,
     input_width: HashMap<usize, u16>,
-    current_with: usize,
+    pub current_with: usize,
     lines: usize,
 }
 
 impl TextBox {
-
     pub fn count_new_line(&self) -> u16 {
         self.input.chars().filter(|&x| x == '\n').count() as u16
     }
@@ -17,7 +16,6 @@ impl TextBox {
         let lines = self.input_width.get_mut(&self.lines).unwrap();
         *lines = (self.input.chars().count() - self.current_with) as u16;
     }
-
 
     pub fn input_width(&self) -> &u16 {
         let index = self.input_width.get(&self.lines).unwrap();
@@ -30,8 +28,7 @@ impl TextBox {
         self.set_current_input_width();
     }
 
-    pub fn enter_command(&mut self) {
-    }
+    pub fn enter_command(&mut self) {}
 
     fn set_newline_input_width(&mut self, index: usize, width: u16) {
         self.input_width.insert(index, width);
@@ -41,14 +38,12 @@ impl TextBox {
         self.current_with = self.input.chars().count();
     }
 
-    /*
     // カーソルを行頭に持っていく
-    fn input_width_init(&mut self) {
+    pub fn input_width_init(&mut self) {
         self.input_width = HashMap::from([(0, 0)]);
         self.current_with = 0;
         self.lines = 0;
     }
-    */
 }
 
 impl Default for TextBox {
