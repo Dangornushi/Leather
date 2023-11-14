@@ -1,5 +1,2 @@
-dangomushi
-
-
-
-warajimushi
+dangomushi, hello
+dangomushi, goodmoring

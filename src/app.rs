@@ -70,40 +70,40 @@ impl App {
         code: KeyCode,
         modifiers: KeyModifiers,
     ) -> Result<Status, Box<dyn Error>> {
+        let mut status: Result<Status, Box<dyn Error>> = Ok(Status::StatusPass);
+
         match (code, modifiers) {
             (KeyCode::Enter, KeyModifiers::NONE) => {
                 self.command_text_box.enter_command();
                 match self.command_text_box.input.as_str() {
-                    "q" => Ok(Status::StatusExit),
+                    "q" => status = Ok(Status::StatusExit),
                     "w" => {
-                        self.save_file_text_box_input();
-                        Ok(Status::StatusPass)
+                        let _ = self.save_file_text_box_input();
                     }
-                    _ => Ok(Status::StatusPass),
+                    _ => {}
                 }
             }
             (KeyCode::Char(c), _) => {
-                self.command_text_box.input.push(c);
+                self.command_text_box.add_input_data(c);
                 self.command_text_box.set_input_width();
-                Ok(Status::StatusPass)
             }
             (KeyCode::Backspace, KeyModifiers::NONE) => {
                 if let Some(last) = self.command_text_box.input.chars().last() {
                     if last != '\n' {
-                        self.command_text_box.input.pop();
+                        self.command_text_box.delete_input_data();
                         self.command_text_box.set_input_width();
                     }
                 }
-                Ok(Status::StatusPass)
             }
             (KeyCode::Esc, KeyModifiers::NONE) => {
                 self.input_mode = InputMode::Normal;
-                Ok(Status::StatusPass)
             }
-            _ => Ok(Status::StatusPass),
+            _ => {}
         }
+        status
     }
 }
+
 pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<()> {
     let mut system_status: Result<Status, Box<dyn Error>> = Ok(Status::StatusPass);
     // 描画する内容は全てui関数にまかせてる
@@ -119,9 +119,26 @@ pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Resu
                 (KeyCode::Char('i'), KeyModifiers::NONE) => {
                     app.input_mode = InputMode::Editing;
                 }
-                (KeyCode::Char('h'), KeyModifiers::NONE) => {}
+                (KeyCode::Char('h'), KeyModifiers::NONE) => {
+                    app.text_box.cursor_left();
+                }
+                (KeyCode::Char('j'), KeyModifiers::NONE) => {
+                    app.text_box.cursor_down();
+                }
+                (KeyCode::Char('k'), KeyModifiers::NONE) => {
+                    app.text_box.cursor_up();
+                }
+                (KeyCode::Char('l'), KeyModifiers::NONE) => {
+                    app.text_box.cursor_right();
+                }
                 (KeyCode::Char('g'), KeyModifiers::NONE) => {
                     app.text_box.input_width_init();
+                }
+                (KeyCode::Char('$'), KeyModifiers::NONE) => {
+                    app.text_box.cursor_line_end();
+                }
+                (KeyCode::Char('0'), KeyModifiers::NONE) => {
+                    app.text_box.cursor_line_start();
                 }
                 (KeyCode::Char(':'), KeyModifiers::NONE) => {
                     app.input_mode = InputMode::Command;
@@ -132,17 +149,17 @@ pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Resu
             // 編集モードは入力をappに保存する
             InputMode::Editing => match (code, modifiers) {
                 (KeyCode::Enter, KeyModifiers::NONE) => {
-                    app.text_box.input.push('\n');
+                    app.text_box.add_input_data('\n');
                     app.text_box.add_newline();
                 }
                 (KeyCode::Char(c), _) => {
-                    app.text_box.input.push(c);
+                    app.text_box.add_input_data(c);
                     app.text_box.set_input_width();
                 }
                 (KeyCode::Backspace, KeyModifiers::NONE) => {
                     if let Some(last) = app.text_box.input.chars().last() {
                         if last != '\n' {
-                            app.text_box.input.pop();
+                            app.text_box.delete_input_data();
                             app.text_box.set_input_width();
                         }
                     }
