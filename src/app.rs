@@ -85,13 +85,11 @@ impl App {
             }
             (KeyCode::Char(c), _) => {
                 self.command_text_box.add_input_data(c);
-                self.command_text_box.set_input_width();
             }
             (KeyCode::Backspace, KeyModifiers::NONE) => {
                 if let Some(last) = self.command_text_box.input.chars().last() {
                     if last != '\n' {
                         self.command_text_box.delete_input_data();
-                        self.command_text_box.set_input_width();
                     }
                 }
             }
@@ -116,11 +114,11 @@ pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Resu
         match app.input_mode {
             // ノーマルモードは入力を直接動作に割り当てる
             InputMode::Normal => match (code, modifiers) {
-                (KeyCode::Char('i'), KeyModifiers::NONE) => {
-                    app.input_mode = InputMode::Editing;
-                }
                 (KeyCode::Char('h'), KeyModifiers::NONE) => {
                     app.text_box.cursor_left();
+                }
+                (KeyCode::Char('i'), KeyModifiers::NONE) => {
+                    app.input_mode = InputMode::Editing;
                 }
                 (KeyCode::Char('j'), KeyModifiers::NONE) => {
                     app.text_box.cursor_down();
@@ -130,6 +128,10 @@ pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Resu
                 }
                 (KeyCode::Char('l'), KeyModifiers::NONE) => {
                     app.text_box.cursor_right();
+                }
+                (KeyCode::Char('o'), KeyModifiers::NONE) => {
+                    app.text_box.add_input_data('\n');
+                    app.text_box.add_newline();
                 }
                 (KeyCode::Char('g'), KeyModifiers::NONE) => {
                     app.text_box.input_width_init();
@@ -154,17 +156,16 @@ pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Resu
                 }
                 (KeyCode::Char(c), _) => {
                     app.text_box.add_input_data(c);
-                    app.text_box.set_input_width();
                 }
                 (KeyCode::Backspace, KeyModifiers::NONE) => {
                     if let Some(last) = app.text_box.input.chars().last() {
                         if last != '\n' {
                             app.text_box.delete_input_data();
-                            app.text_box.set_input_width();
                         }
                     }
                 }
                 (KeyCode::Esc, KeyModifiers::NONE) => {
+                    //app.text_box.input_width_reload();
                     app.input_mode = InputMode::Normal;
                 }
                 _ => {}

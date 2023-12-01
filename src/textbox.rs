@@ -9,23 +9,26 @@ pub struct TextBox {
     lines: usize,
     cursor_x: u16,
     cursor_y: u16,
+    input_counter: usize,
 }
 
 impl TextBox {
+    pub fn input_width_reload(&mut self) {
+        self.set_newline_input_width(
+            self.cursor_y as usize,
+            (self.input_counter).try_into().unwrap(),
+        );
+    }
+
+    pub fn get_now_line_width(&mut self) -> u16 {
+        *self.input_width.get(&(self.cursor_y as usize)).unwrap()
+    }
+
     pub fn count_new_line(&self) -> u16 {
-        //self.input.chars().filter(|&x| x == '\n').count() as u16
         self.cursor_y
     }
 
-    pub fn set_input_width(&mut self) {
-        println!("{:?}", self.input_width.get(&self.lines).unwrap());
-
-        let lines = self.input_width.get_mut(&self.lines).unwrap();
-        *lines = (self.input.chars().count() - self.current_with) as u16;
-    }
-
     pub fn input_width(&self) -> u16 {
-        //let index = self.input_width.get(&self.lines).unwrap();
         let index = self.cursor_x as u16;
         index.clone()
     }
@@ -39,40 +42,59 @@ impl TextBox {
     }
 
     pub fn cursor_right(&mut self) {
-        if self.input_index < self.input.len() {
+        if self.cursor_x < self.get_now_line_width() {
+            //println!(">{:?}, {:?}<", self.get_now_line_width(), self.cursor_x);
             self.cursor_x += 1;
             self.input_index += 1;
+            //exit(0);
         } else {
+            //println!(">{:?}, {:?}<", self.get_now_line_width(), self.cursor_y);
         }
     }
 
     pub fn cursor_up(&mut self) {
+        let now_line_len = self.input_width.get(&((self.cursor_y) as usize)).unwrap();
+
+        if self.cursor_y < 1 {
+            return;
+        }
+
         self.cursor_y -= 1;
-        self.lines -= 1;
-        self.cursor_line_end();
+
+        let jamp_line_len = self.input_width.get(&(self.cursor_y as usize)).unwrap(); // ジャンプ先の行の文字数
+
+        if now_line_len > jamp_line_len {
+            // 今の行の方が長かったら上の行の最後にカーソルを移動
+            self.cursor_x = *jamp_line_len;
+        } else {
+            // 今の行の方が短かったら今のカーソルの位置から上に移動
+            self.input_index -= self.cursor_x as usize;
+            self.cursor_x = 0;
+            self.input_index -= *jamp_line_len as usize + 1;
+            println!("{:?}, {:?}", jamp_line_len, self.input_index);
+
+            //self.input_index += self.cursor_x as usize;
+        }
+
+        self.input_counter = *jamp_line_len as usize;
     }
 
     pub fn cursor_down(&mut self) {
+        if usize::from(self.cursor_y + 1) >= self.input_width.len() {
+            return;
+        }
+        let now_line_len = self.input_width.get(&((self.cursor_y) as usize)).unwrap();
         self.cursor_y += 1;
-        self.lines += 1;
+        let jamp_line_len = self.input_width.get(&((self.cursor_y) as usize)).unwrap();
+        self.input_index += 1;
 
-        let slice = &self.input[self.input_index - 1..];
-
-        for c in slice.chars() {
-            if c == '\n' {
-                break;
-            }
-            self.input_index += 1;
-        }
-
-        let index = self.input_width.get(&self.lines).unwrap();
-
-        if *index > self.cursor_x {
-            self.input_index += self.cursor_x as usize;
+        if now_line_len > jamp_line_len {
+            self.cursor_x = *jamp_line_len;
+            self.input_index += *jamp_line_len as usize;
         } else {
-            self.input_index += *index as usize;
-            self.cursor_x = *index;
+            self.input_index += self.cursor_x as usize;
         }
+        self.input_counter = *jamp_line_len as usize;
     }
 
     pub fn cursor_line_end(&mut self) {
@@ -83,11 +105,6 @@ impl TextBox {
 
     pub fn cursor_line_start(&mut self) {
         if self.cursor_x > 1 && self.input_index > 0 {
-            /*
-            println!(
-                "{:?} - {:?} : {:?} - {:?}",
-                index, self.input_index, self.cursor_x, self.input_index
-            );*/
             self.cursor_x = 0;
             self.input_index = 0;
         } else {
@@ -96,24 +113,40 @@ impl TextBox {
     }
 
     pub fn add_newline(&mut self) {
+        let slice = &self.input[self.input_index..];
+
+        for c in slice.chars() {
+            if c == '\n' {
+                break;
+            }
+            self.input_counter += 1;
+            self.cursor_x += 1;
+        }
+        self.cursor_x -= 1;
+        self.input_counter -= 1;
+        self.input_width_reload();
+        self.input_counter = 0;
         self.lines += 1;
         self.cursor_y += 1;
         self.cursor_x = 0;
-        self.set_newline_input_width(self.lines.clone(), 0);
-        self.set_current_input_width();
+        self.input_width_reload();
     }
 
     pub fn delete_input_data(&mut self) {
-        if self.input_index > 0 {
-            self.input.remove(self.input_index - 1);
-            self.cursor_left();
-        } else {
+        if self.input_index <= 0 || self.cursor_x <= 0 {
+            return;
         }
+        self.input.remove(self.input_index - 1);
+        self.input_counter -= 1;
+        self.cursor_left();
     }
 
     pub fn add_input_data(&mut self, c: char) {
         self.input.insert(self.input_index, c);
-        self.cursor_right();
+        self.input_index += 1;
+        self.cursor_x += 1;
+        self.input_counter += 1;
+        self.input_width_reload();
     }
 
     pub fn enter_command(&mut self) {}
@@ -129,7 +162,6 @@ impl TextBox {
 
     // カーソルを行頭に持っていく
     pub fn input_width_init(&mut self) {
-        //self.input_width = HashMap::from([(0, 0)]);
         self.current_with = 0;
         self.lines = 0;
         self.input_index = 0;
@@ -148,6 +180,7 @@ impl Default for TextBox {
             lines: 0,
             cursor_x: 0,
             cursor_y: 0,
+            input_counter: 0,
         }
     }
 }
