@@ -60,22 +60,9 @@ impl TextBox {
         }
 
         self.cursor_y -= 1;
-
         let jamp_line_len = self.input_width.get(&(self.cursor_y as usize)).unwrap(); // ジャンプ先の行の文字数
-
-        if now_line_len > jamp_line_len {
-            // 今の行の方が長かったら上の行の最後にカーソルを移動
-            self.cursor_x = *jamp_line_len;
-        } else {
-            // 今の行の方が短かったら今のカーソルの位置から上に移動
-            self.input_index -= self.cursor_x as usize;
-            self.cursor_x = 0;
-            self.input_index -= *jamp_line_len as usize + 1;
-            println!("{:?}, {:?}", jamp_line_len, self.input_index);
-
-            //self.input_index += self.cursor_x as usize;
-        }
-
+        self.input_index -= *now_line_len as usize + 1;
+        self.cursor_x = *jamp_line_len;
         self.input_counter = *jamp_line_len as usize;
     }
 
@@ -120,16 +107,14 @@ impl TextBox {
                 break;
             }
             self.input_counter += 1;
-            self.cursor_x += 1;
         }
-        self.cursor_x -= 1;
+        self.cursor_x = 0;
         self.input_counter -= 1;
         self.input_width_reload();
         self.input_counter = 0;
         self.lines += 1;
         self.cursor_y += 1;
         self.cursor_x = 0;
-        self.input_width_reload();
     }
 
     pub fn delete_input_data(&mut self) {

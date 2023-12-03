@@ -165,7 +165,7 @@ pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Resu
                     }
                 }
                 (KeyCode::Esc, KeyModifiers::NONE) => {
-                    //app.text_box.input_width_reload();
+                    app.text_box.input_width_reload();
                     app.input_mode = InputMode::Normal;
                 }
                 _ => {}
