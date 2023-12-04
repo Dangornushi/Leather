@@ -53,15 +53,13 @@ impl TextBox {
     }
 
     pub fn cursor_up(&mut self) {
-        let now_line_len = self.input_width.get(&((self.cursor_y) as usize)).unwrap();
-
         if self.cursor_y < 1 {
             return;
         }
 
         self.cursor_y -= 1;
         let jamp_line_len = self.input_width.get(&(self.cursor_y as usize)).unwrap(); // ジャンプ先の行の文字数
-        self.input_index -= *now_line_len as usize + 1;
+        self.input_index -= self.cursor_x as usize + 1;
         self.cursor_x = *jamp_line_len;
         self.input_counter = *jamp_line_len as usize;
     }
@@ -70,17 +68,21 @@ impl TextBox {
         if usize::from(self.cursor_y + 1) >= self.input_width.len() {
             return;
         }
-        let now_line_len = self.input_width.get(&((self.cursor_y) as usize)).unwrap();
         self.cursor_y += 1;
-        let jamp_line_len = self.input_width.get(&((self.cursor_y) as usize)).unwrap();
-        self.input_index += 1;
 
-        if now_line_len > jamp_line_len {
-            self.cursor_x = *jamp_line_len;
-            self.input_index += *jamp_line_len as usize;
-        } else {
-            self.input_index += self.cursor_x as usize;
+        let jamp_line_len = self.input_width.get(&((self.cursor_y) as usize)).unwrap();
+
+        let slice = &self.input[self.input_index..];
+
+        for c in slice.chars() {
+            if c == '\n' {
+                break;
+            }
+            self.input_index += 1;
         }
+
+        self.cursor_x = *jamp_line_len;
+        self.input_index += *jamp_line_len as usize + 1;
         self.input_counter = *jamp_line_len as usize;
     }
 
@@ -110,11 +112,33 @@ impl TextBox {
         }
         self.cursor_x = 0;
         self.input_counter -= 1;
+        self.lines += 1;
+
+        let slice = &self.input[self.input_index..];
+        let mut enter_counter = 0;
+
+        for c in slice.chars() {
+            if c == '\n' {
+                break;
+            }
+            enter_counter += 1;
+        }
+
+        let now_line_len = self.input_width.get(&((self.cursor_y) as usize)).unwrap();
+        self.input_counter = *now_line_len as usize - enter_counter - 1;
+
         self.input_width_reload();
         self.input_counter = 0;
-        self.lines += 1;
         self.cursor_y += 1;
-        self.cursor_x = 0;
+
+        if enter_counter > 0 {
+            self.cursor_x = enter_counter as u16;
+            self.input_counter = enter_counter as usize;
+            self.input_index += enter_counter as usize;
+        } else {
+            self.cursor_x = 0;
+        }
+        self.input_width_reload();
     }
 
     pub fn delete_input_data(&mut self) {
