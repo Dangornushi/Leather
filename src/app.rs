@@ -154,6 +154,12 @@ pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Resu
                     app.text_box.add_input_data('\n');
                     app.text_box.add_newline();
                 }
+                (KeyCode::Tab, KeyModifiers::NONE) => {
+                    app.text_box.add_input_data(' ');
+                    app.text_box.add_input_data(' ');
+                    app.text_box.add_input_data(' ');
+                    app.text_box.add_input_data(' ');
+                }
                 (KeyCode::Char(c), _) => {
                     app.text_box.add_input_data(c);
                 }

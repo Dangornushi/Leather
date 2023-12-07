@@ -1,3 +1,9 @@
-dangomushiw
-arajimushi
-aaaaaa
+
+
+def main(void): 
+    pass
+
+
+
+
+main(void)

@@ -131,13 +131,9 @@ impl TextBox {
         self.input_counter = 0;
         self.cursor_y += 1;
 
-        if enter_counter > 0 {
-            self.cursor_x = enter_counter as u16;
-            self.input_counter = enter_counter as usize;
-            self.input_index += enter_counter as usize;
-        } else {
-            self.cursor_x = 0;
-        }
+        self.cursor_x = 0;
+        self.input_counter = enter_counter;
+
         self.input_width_reload();
     }
 
