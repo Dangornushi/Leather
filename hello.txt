@@ -1,9 +1,4 @@
+def main():
+    println()
 
-
-def main(void): 
-    pass
-
-
-
-
-main(void)
+main()

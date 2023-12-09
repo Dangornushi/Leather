@@ -145,6 +145,9 @@ pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Resu
                 (KeyCode::Char(':'), KeyModifiers::NONE) => {
                     app.input_mode = InputMode::Command;
                 }
+                (KeyCode::Char('d'), KeyModifiers::NONE) => {
+                    app.text_box.delete_now_line();
+                }
                 (KeyCode::Esc, KeyModifiers::NONE) => {}
                 _ => {}
             },
@@ -165,8 +168,9 @@ pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Resu
                 }
                 (KeyCode::Backspace, KeyModifiers::NONE) => {
                     if let Some(last) = app.text_box.input.chars().last() {
+                        app.text_box.delete_input_data();
                         if last != '\n' {
-                            app.text_box.delete_input_data();
+                            //exit(0);
                         }
                     }
                 }

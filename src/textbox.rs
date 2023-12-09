@@ -137,6 +137,31 @@ impl TextBox {
         self.input_width_reload();
     }
 
+    pub fn delete_now_line(&mut self) {
+        if self.input_index <= 0 || self.cursor_x <= 0 {
+            return;
+        }
+
+        loop {
+            self.input_index -= 1;
+            self.input.remove(self.input_index);
+            self.cursor_x -= 1;
+            self.input_counter -= 1;
+            self.input_width_reload();
+            if self.cursor_x < 1 {
+                self.input_index -= 1;
+                self.input.remove(self.input_index);
+                self.input_counter = 0;
+                self.input_width.remove(&(self.cursor_y as usize));
+                self.input_index += 1;
+                break;
+            }
+        }
+        self.cursor_up();
+
+        //self.input_counter = 0;
+    }
+
     pub fn delete_input_data(&mut self) {
         if self.input_index <= 0 || self.cursor_x <= 0 {
             return;
